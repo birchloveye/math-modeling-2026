@@ -1,0 +1,22 @@
+name: 企业微信 Push 提醒
+
+on:
+  push:
+    branches:
+      - main
+      - master
+
+jobs:
+  wechat-notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 发送企业微信通知
+        run: |
+          curl 'https://qyapi.weixin.qq.com/cgi-bin/webhook/send?key=${{ secrets.WECHAT_WORK_KEY }}' \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "msgtype": "markdown",
+              "markdown": {
+                "content": "### 🚀 Git 新提交提醒\n> **项目**: `${{ github.repository }}`\n> **提交人**: `${{ github.actor }}`\n> **Commit 信息**: `${{ github.event.head_commit.message }}`\n\n[点击查看 GitHub 变更](${{ github.event.head_commit.url }})"
+              }
+            }'
