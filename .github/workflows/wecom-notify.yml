@@ -1,0 +1,49 @@
+name: 企业微信播报
+
+on:
+  push:
+  pull_request:
+    types: [opened, reopened, closed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+
+    env:
+      WECOM_WEBHOOK: ${{ secrets.WECOM_WEBHOOK }}
+      EVENT_NAME: ${{ github.event_name }}
+      REPOSITORY: ${{ github.repository }}
+      ACTOR: ${{ github.actor }}
+      BRANCH: ${{ github.head_ref || github.ref_name }}
+      TITLE: ${{ github.event.head_commit.message || github.event.pull_request.title || '手动 Ping 测试' }}
+      DETAILS_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+    steps:
+      - name: 发送企业微信消息
+        shell: bash
+        run: |
+          title="${TITLE:0:500}"
+
+          content="### GitHub 仓库播报
+          >仓库：${REPOSITORY}
+          >事件：${EVENT_NAME}
+          >成员：${ACTOR}
+          >分支：${BRANCH}
+          >内容：${title}
+
+          [查看详情](${DETAILS_URL})"
+
+          payload=$(jq -n \
+            --arg content "$content" \
+            '{msgtype:"markdown", markdown:{content:$content}}')
+
+          response=$(curl --silent --show-error --fail-with-body \
+            -H "Content-Type: application/json" \
+            -d "$payload" \
+            "$WECOM_WEBHOOK")
+
+          echo "$response" | jq -e '.errcode == 0'
