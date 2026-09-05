@@ -1,3 +1,3 @@
 # math-modeling-2026
 
-# 大家好啊
+# hello
