@@ -388,12 +388,22 @@ def main() -> int:
     for risk_fail in [2.0, 3.0, 5.0]:
         choice = optimize_groups(women, cdf, weeks, int(cfg["min_group_size"]), risk_fail, float(cfg["risk_delay"])) if route == "B" else fixed_groups(women, cdf, weeks, risk_fail, float(cfg["risk_delay"]))
         sensitivities[f"risk_fail_{risk_fail:g}"] = choice
+    measurement_sensitivity = {"gestational_week_systematic_error": {
+        "minus_0.5_week": [max(10.0, g["week"] - 0.5) for g in grouping["groups"]],
+        "plus_0.5_week": [min(25.0, g["week"] + 0.5) for g in grouping["groups"]],
+    }}
+    for altered_threshold in [float(cfg["threshold"]) - 0.002, float(cfg["threshold"]) + 0.002]:
+        altered_women = woman_records(male, altered_threshold)
+        alt_beta, alt_scaler, _ = fit_interval_hazard(altered_women, weeks, 0.5 if route == "B" else 2.0, iterations=1500)
+        alt_cdf = predict_cdf(altered_women, weeks, alt_beta, alt_scaler)
+        alt_grouping = optimize_groups(altered_women, alt_cdf, weeks, int(cfg["min_group_size"]), float(cfg["risk_fail"]), float(cfg["risk_delay"])) if route == "B" else fixed_groups(altered_women, alt_cdf, weeks, float(cfg["risk_fail"]), float(cfg["risk_delay"]))
+        measurement_sensitivity[f"y_threshold_{altered_threshold:.3f}"] = alt_grouping
     q4 = q4_cv(female, int(cfg["folds"]), int(cfg["seed"]), 1.0 if route == "B" else 3.0)
     censor_counts = {kind: sum(p["censor"] == kind for p in women) for kind in ["left", "interval", "right"]}
     metrics = {"route": route, "q1": q1_cv, "q2_q3_objective": grouping["objective"], "q4": {k: {m: v for m, v in d.items() if m in {"prevalence", "sensitivity", "specificity", "balanced_accuracy", "pr_auc", "brier"}} for k, d in q4["labels"].items()}}
     results = {"route": route, "data": {"male_rows": len(male), "male_women": len(women), "female_rows": len(female), "female_women": q4["n_women"], "censor_counts": censor_counts},
                "q1": {"feature_names": names, "fixed_coefficients_standardized": beta.tolist(), "scaler": scaler, "cv": q1_cv},
-               "q2_q3": {"week_grid": weeks.tolist(), "selected_grouping": grouping, "uniform_12_objective": uniform_12_objective, "risk_sensitivity": sensitivities, "interval_loglik_history": likelihood_history}, "q4": q4,
+               "q2_q3": {"week_grid": weeks.tolist(), "selected_grouping": grouping, "uniform_12_objective": uniform_12_objective, "risk_sensitivity": sensitivities, "measurement_sensitivity": measurement_sensitivity, "interval_loglik_history": likelihood_history}, "q4": q4,
                "limitations": ["附件样本偏向高BMI人群，分组不应外推至未覆盖人群", "离散风险模型使用0.5周网格", "Q4保留全部检测记录但严格按孕妇代码分折", "AE未作为预测特征"]}
     write_json(args.output / "metrics.json", metrics)
     write_json(args.output / "results.json", results)
