@@ -11,6 +11,9 @@ workspace/experiments/*
 !workspace/experiments/experiment_plan.json
 !workspace/experiments/validation_evidence.json
 !workspace/experiments/validation_report.json
+!workspace/experiments/freeze_manifest.json
+!workspace/experiments/FROZEN_RESULTS.json
+!workspace/experiments/final_audit_report.json
 workspace/figures/*
 !workspace/figures/.gitkeep
 workspace/paper/*
