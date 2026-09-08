@@ -16,6 +16,7 @@ workspace/experiments/*
 !workspace/experiments/final_audit_report.json
 workspace/figures/*
 !workspace/figures/.gitkeep
+!workspace/figures/*.png
 workspace/paper/*
 !workspace/paper/.gitkeep
 !workspace/paper/*.md
