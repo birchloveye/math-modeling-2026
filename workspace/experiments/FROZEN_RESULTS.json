@@ -4,7 +4,10 @@
     "runs/c-problem-routes-ab-v7-0002"
   ],
   "accepted_model": "B用于Q1-Q3，A用于Q4；A同时作为Q1-Q3基线",
-  "final_figures": [],
+  "final_figures": [
+    "workspace/figures/figure1_concentration_fit.png",
+    "workspace/figures/figure2_results_overview.png"
+  ],
   "final_metrics": {
     "q1": {
       "baseline_significance": {
@@ -62,9 +65,11 @@
     }
   },
   "final_tables": [],
-  "freeze_timestamp": "2026-09-08T09:32:48.208727+00:00",
+  "freeze_timestamp": "2026-09-08T10:02:59.479839+00:00",
   "sha256": {
+    "output/pdf/C题_NIPT建模论文.pdf": "bd727848811f22b194eca3e98c46697039595f181cd49da2ccee01bc616dfe74",
     "tools/c_problem_experiment.py": "6263736a22654edd84e6b5bd9e1f820071182747b8923349befc9db4161b1396",
+    "tools/render_c_problem_paper.py": "17ccecf3ed141164db501dd5dce66431cbc8f70e3f8ccb0ad6a6630f3df25576",
     "workspace/data/data_summary.json": "a18266d3ab68ae426c0d0313c8841d0ef736d13eb8da5ddc00e062041fdf5b9e",
     "workspace/data/附件.xlsx": "14827156218bd4f7e4f16db4aa6d9f757c6648379e038ae6c6b58383648614af",
     "workspace/experiments/experiment_plan.json": "8560869cb46923fa50f9b64fa5b66b634af146ebf85ac096708c0284763073c0",
@@ -78,7 +83,13 @@
     "workspace/experiments/runs/c-problem-routes-ab-v7-0002/runtime.json": "69b6e80a3b847c272029d8d3dff76424dcac494353e6c25bbe73225b6e5c8ac9",
     "workspace/experiments/validation_evidence.json": "5d42fa7f96fe34c5ad6fee46a7ccd361b993089ecf784355d49a8fa22d74fb14",
     "workspace/experiments/validation_report.json": "d3ec947c3e332f0e9e0aa473a4ca9ed408cb42680adfea3e3145f36e4d1071a6",
+    "workspace/figures/figure1_concentration_fit.png": "5435da40e03331cae547e67fce18a935137ec1d7204ee99d82683d138b803406",
+    "workspace/figures/figure2_results_overview.png": "9d20ca719388d5822ba8cdc4471dc6b5d56682da040649e61e78893a804fe515",
     "workspace/models/selected_model.md": "5aa648826fbb25287aee7edd79c983bc4a6825e5a10b530ec10e251aca901f0b",
+    "workspace/paper/consistency_report.json": "080340d080a867cef8dce8c749cb7d523cb9fd5362cdaadf1aaaba17b8a6b3f5",
+    "workspace/paper/draft.md": "49f12269cd0543a3413b0128baf1686756cb59b58f0ef9ce5f5ab8c1d25c75e1",
+    "workspace/paper/final_review.md": "4fd25c9df46249215f0def6e0a617342a6d751a826e4c4ed78ca77f29b2ec674",
+    "workspace/paper/review_report.md": "615e00adafa96ee04fa60eaf4f23cb1a5c3863e9d56319cd72c5834e3ffff215",
     "workspace/problem/problem_contract.json": "c17b9d35d18906877b54dc6fc932ab7be3a91769189df348c2b919554b0a554a",
     "workspace/research/P7_validation_review.md": "e702a387a005f41e744fd2fee46ebbf42922d87c743d9b1adc7e17ceee6eb9e2"
   }

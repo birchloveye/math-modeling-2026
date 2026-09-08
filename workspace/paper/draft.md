@@ -220,4 +220,4 @@ ANY 阳性率为 0.111，其 PR-AUC 高于按流行率随机排序的基准。�
 2. `workspace/experiments/experiment_plan.json`：正式批量实验配置。
 3. `workspace/experiments/FROZEN_RESULTS.json`：人工接受结果及SHA256清单。
 4. `workspace/claims/claim_ledger.json`：结论与冻结实验的对应关系。
-5. `workspace/figures/figure1_concentration_fit.png`、`figure2_results_overview.png`：论文插图。
+5. `workspace/figures/`：两幅论文插图及其可复现输出。

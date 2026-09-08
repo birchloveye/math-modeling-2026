@@ -58,7 +58,10 @@
     }
   },
   "final_tables": [],
-  "final_figures": [],
+  "final_figures": [
+    "workspace/figures/figure1_concentration_fit.png",
+    "workspace/figures/figure2_results_overview.png"
+  ],
   "files": [
     "workspace/data/附件.xlsx",
     "workspace/data/data_summary.json",
@@ -68,6 +71,12 @@
     "workspace/experiments/validation_evidence.json",
     "workspace/experiments/validation_report.json",
     "workspace/research/P7_validation_review.md",
-    "tools/c_problem_experiment.py"
+    "workspace/paper/review_report.md",
+    "workspace/paper/final_review.md",
+    "workspace/paper/consistency_report.json",
+    "tools/c_problem_experiment.py",
+    "tools/render_c_problem_paper.py",
+    "workspace/paper/draft.md",
+    "output/pdf/C题_NIPT建模论文.pdf"
   ]
 }

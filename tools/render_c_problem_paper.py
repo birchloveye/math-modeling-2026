@@ -5,9 +5,14 @@ from __future__ import annotations
 import argparse
 import html
 import json
+import os
 import re
 import sys
 from pathlib import Path
+
+ROOT = Path(__file__).resolve().parents[1]
+os.environ.setdefault("MPLCONFIGDIR", str(ROOT / "workspace/figures/.mplconfig"))
+(ROOT / "workspace/figures/.mplconfig").mkdir(parents=True, exist_ok=True)
 
 import matplotlib
 matplotlib.use("Agg")
@@ -15,7 +20,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.font_manager import FontProperties
 from reportlab.lib import colors
-from reportlab.lib.enums import TA_CENTER, TA_JUSTIFY
+from reportlab.lib.enums import TA_CENTER, TA_LEFT
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import cm
@@ -23,7 +28,6 @@ from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import Image, KeepTogether, PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
-ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "tools"))
 from c_problem_experiment import design_concentration, num, predict_fixed, read_sheet, week_num  # noqa: E402
 
@@ -158,16 +162,22 @@ def plot_figures(data_path: Path, results_a: Path, results_b: Path, output_dir: 
 def clean_inline(text: str) -> str:
     text = re.sub(r"\[claim:[^\]]+\]", "", text)
     text = text.replace("**", "").replace("`", "")
-    text = text.replace("<", "&lt;").replace(">", "&gt;")
-    return text
+    text = re.sub(r"\\\((.*?)\\\)", lambda match: equation_text(match.group(1)), text)
+    return html.escape(text)
 
 
 def equation_text(text: str) -> str:
+    text = text.replace(r"\boldsymbol", "").replace(r"\mathbf", "")
+    text = re.sub(r"\\frac\{([^{}]+)\}\{([^{}]+)\}", r"(\1)/(\2)", text)
+    text = re.sub(r"\^\{([^{}]+)\}", r"^(\1)", text)
+    text = re.sub(r"_\{([^{}]+)\}", r"_(\1)", text)
+    text = re.sub(r"\\operatorname\{([^{}]+)\}", r"\1", text)
+    text = re.sub(r"\\(?:mathbf|boldsymbol)\s*\{?([^{}\s]+)\}?", r"\1", text)
     replacements = {
         r"\beta": "β", r"\gamma": "γ", r"\theta": "θ", r"\alpha": "α", r"\varepsilon": "ε",
         r"\ge": "≥", r"\le": "≤", r"\inf": "inf", r"\prod": "Π", r"\sum": "Σ",
         r"\mid": " | ", r"\qquad": "    ", r"\operatorname": "", r"\mathbf": "",
-        r"\frac": "frac", r"\max": "max", r"\in": "∈", r"\top": "T",
+        r"\frac": "/", r"\max": "max", r"\in": "∈", r"\top": "T",
     }
     for old, new in replacements.items():
         text = text.replace(old, new)
@@ -185,7 +195,7 @@ def build_pdf(markdown_path: Path, output_pdf: Path, figures_dir: Path) -> None:
     register_fonts()
     output_pdf.parent.mkdir(parents=True, exist_ok=True)
     body = ParagraphStyle("BodyCN", fontName="SimSun", fontSize=12, leading=20, firstLineIndent=24,
-                          alignment=TA_JUSTIFY, textColor=colors.HexColor("#222222"), spaceAfter=4)
+                          alignment=TA_LEFT, textColor=colors.HexColor("#222222"), spaceAfter=4)
     abstract_body = ParagraphStyle("AbstractCN", parent=body, firstLineIndent=24, leading=20)
     h1 = ParagraphStyle("H1CN", fontName="SimHei", fontSize=15, leading=22, spaceBefore=10, spaceAfter=7)
     h2 = ParagraphStyle("H2CN", fontName="SimHei", fontSize=13, leading=20, spaceBefore=8, spaceAfter=5)
@@ -216,10 +226,10 @@ def build_pdf(markdown_path: Path, output_pdf: Path, figures_dir: Path) -> None:
     while i < len(lines):
         raw = lines[i]
         line = raw.strip()
-        if line == "\[":
+        if line == r"\[":
             equation = []
             i += 1
-            while i < len(lines) and lines[i].strip() != "\]":
+            while i < len(lines) and lines[i].strip() != r"\]":
                 equation.append(lines[i].strip())
                 i += 1
             story.append(Paragraph(html.escape(equation_text(" ".join(equation))), eq_style))
