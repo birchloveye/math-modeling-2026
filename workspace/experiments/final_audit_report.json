@@ -1,6 +1,23 @@
 {
   "checked_files": 17,
-  "findings": [],
+  "findings": [
+    {
+      "file": "tools/c_problem_experiment.py",
+      "message": "哈希不匹配；Freeze 已失效"
+    },
+    {
+      "file": "workspace/experiments/experiment_plan.json",
+      "message": "哈希不匹配；Freeze 已失效"
+    },
+    {
+      "file": "workspace/experiments/validation_evidence.json",
+      "message": "哈希不匹配；Freeze 已失效"
+    },
+    {
+      "file": "workspace/experiments/validation_report.json",
+      "message": "哈希不匹配；Freeze 已失效"
+    }
+  ],
   "freeze": "workspace\\experiments\\FROZEN_RESULTS.json",
-  "passed": true
+  "passed": false
 }

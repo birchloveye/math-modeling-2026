@@ -149,6 +149,31 @@ def regression_cv(x: np.ndarray, y: np.ndarray, groups: np.ndarray, route: str, 
     }
 
 
+def baseline_coefficient_bootstrap(rows: list[dict[str, Any]], seed: int, repeats: int = 120) -> dict[str, Any]:
+    x, y, groups, names = design_concentration(rows, "A")
+    beta, _ = ridge_random_intercept(x, y, groups, 3.0)
+    unique = np.array(sorted(set(groups.tolist())))
+    rng = np.random.default_rng(seed + 29)
+    samples = []
+    for repeat in range(repeats):
+        chosen = rng.choice(unique, size=len(unique), replace=True)
+        xs, ys, gs = [], [], []
+        for copy_index, subject in enumerate(chosen):
+            mask = groups == subject
+            xs.append(x[mask])
+            ys.append(y[mask])
+            gs.extend([f"{copy_index}:{subject}"] * int(np.sum(mask)))
+        boot_beta, _ = ridge_random_intercept(np.vstack(xs), np.concatenate(ys), np.array(gs), 3.0)
+        samples.append(boot_beta)
+    sample = np.array(samples)
+    terms = {}
+    for j, name in enumerate(["截距"] + names):
+        lower, upper = np.quantile(sample[:, j], [0.025, 0.975])
+        sign_p = min(1.0, 2.0 * min(float(np.mean(sample[:, j] <= 0)), float(np.mean(sample[:, j] >= 0))))
+        terms[name] = {"estimate_standardized": float(beta[j]), "ci95_low": float(lower), "ci95_high": float(upper), "bootstrap_sign_p": sign_p}
+    return {"method": "按孕妇有放回重采样120次；标准化系数百分位区间与双侧符号检验", "terms": terms}
+
+
 def woman_records(rows: list[dict[str, Any]], threshold: float) -> list[dict[str, Any]]:
     by_id: dict[str, list[dict[str, Any]]] = {}
     for r in rows:
@@ -404,6 +429,7 @@ def main() -> int:
     route = cfg["model_route"]
     x, y, groups, names = design_concentration(male, route)
     q1_cv = regression_cv(x, y, groups, route, int(cfg["folds"]), int(cfg["seed"]))
+    q1_inference = baseline_coefficient_bootstrap(male, int(cfg["seed"]))
     beta, scaler = ridge_random_intercept(x, y, groups, 1.0 if route == "B" else 3.0)
     women = woman_records(male, float(cfg["threshold"]))
     weeks = np.arange(10.0, 25.01, 0.5)
@@ -431,9 +457,9 @@ def main() -> int:
         measurement_sensitivity[f"y_threshold_{altered_threshold:.3f}"] = alt_grouping
     q4 = q4_cv(female, int(cfg["folds"]), int(cfg["seed"]), route)
     censor_counts = {kind: sum(p["censor"] == kind for p in women) for kind in ["left", "interval", "right"]}
-    metrics = {"route": route, "q1": q1_cv, "q2_q3_objective": grouping["objective"], "q4": {k: {m: v for m, v in d.items() if m in {"prevalence", "sensitivity", "specificity", "balanced_accuracy", "pr_auc", "brier"}} for k, d in q4["labels"].items()}}
+    metrics = {"route": route, "q1": {**q1_cv, "baseline_inference": q1_inference}, "q2_q3_objective": grouping["objective"], "q4": {k: {m: v for m, v in d.items() if m in {"prevalence", "sensitivity", "specificity", "balanced_accuracy", "pr_auc", "brier"}} for k, d in q4["labels"].items()}}
     results = {"route": route, "data": {"male_rows": len(male), "male_women": len(women), "female_rows": len(female), "female_women": q4["n_women"], "censor_counts": censor_counts},
-               "q1": {"feature_names": names, "fixed_coefficients_standardized": beta.tolist(), "scaler": scaler, "cv": q1_cv},
+               "q1": {"feature_names": names, "fixed_coefficients_standardized": beta.tolist(), "scaler": scaler, "cv": q1_cv, "baseline_inference": q1_inference},
                "q2_q3": {"week_grid": weeks.tolist(), "selected_grouping": grouping, "uniform_12_objective": uniform_12_objective, "risk_sensitivity": sensitivities, "measurement_sensitivity": measurement_sensitivity, "interval_loglik_history": likelihood_history}, "q4": q4,
                "limitations": ["附件样本偏向高BMI人群，分组不应外推至未覆盖人群", "离散风险模型使用0.5周网格", "Q4保留全部检测记录但严格按孕妇代码分折", "AE未作为预测特征"]}
     write_json(args.output / "metrics.json", metrics)
