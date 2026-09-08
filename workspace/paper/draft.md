@@ -12,7 +12,7 @@
 
 ## 1 问题重述
 
-NIPT 通过母体外周血中的胎儿游离 DNA 信息判断染色体异常。男胎样本中 Y 染色体浓度达到 4% 后，检测结果通常更可靠；但较晚检测又会增加异常发现过迟的风险。因此需要同时估计 Y 浓度与孕周、BMI 等因素的关系，按 BMI 划分合理人群，并选择兼顾检测失败和延迟发现的检测时点。女胎不含 Y 染色体，需要利用常染色体与 X 染色体 Z 值、测序质量和孕妇信息判定异常。
+NIPT 通过母体外周血中的胎儿游离 DNA 信息判断染色体异常。既有研究表明，孕周、孕妇体重或 BMI 会影响胎儿游离 DNA 比例及无结果风险[1]。男胎样本中 Y 染色体浓度达到 4% 后，检测结果通常更可靠；但较晚检测又会增加异常发现过迟的风险。因此需要同时估计 Y 浓度与孕周、BMI 等因素的关系，按 BMI 划分合理人群，并选择兼顾检测失败和延迟发现的检测时点。女胎不含 Y 染色体，需要利用常染色体与 X 染色体 Z 值、测序质量和孕妇信息判定异常。
 
 本文解决四个问题：
 
@@ -58,7 +58,7 @@ Y_{ij}=\beta_0+\beta_1t_{ij}+\beta_2b_{ij}
 
 ### 3.2 非线性主模型
 
-为刻画孕周增长曲线及 BMI 的非线性影响，路线 B 使用截断三次幂样条：
+为刻画孕周增长曲线及 BMI 的非线性影响，路线 B 使用广义加性模型的平滑函数思想[2]，以截断三次幂样条构造非线性基：
 
 \[
 Y_{ij}=\beta_0+f(t_{ij})+g(b_{ij})
@@ -71,6 +71,10 @@ Y_{ij}=\beta_0+f(t_{ij})+g(b_{ij})
 
 因此，BMI 的负向关联具有统计证据，但孕周效应更适合由非线性概率模型描述。即便如此，路线 B 的总体折外解释力仍较低，不能解释大部分单次测量波动。后续时点决策不直接把浓度点预测当作确定值，而使用达标概率并保留不确定性。
 
+![不同BMI水平下Y染色体浓度与孕周的拟合关系](../figures/figure1_concentration_fit.png)
+
+**图1** 不同BMI水平下Y染色体浓度与孕周的观测及路线B固定效应拟合
+
 ## 4 问题二与问题三：BMI 分组和检测时点
 
 ### 4.1 首次达标的区间删失模型
@@ -81,7 +85,7 @@ Y_{ij}=\beta_0+f(t_{ij})+g(b_{ij})
 T_i=\inf\{t:Y_i(t)\ge 0.04\}.
 \]
 
-若孕妇先在 \(L_i\) 周未达标、后在 \(R_i\) 周达标，则仅知道 \(T_i\in(L_i,R_i]\)；首次检测即达标视为左删失，随访结束仍未达标视为右删失。数据中三类数量分别为 43、217 和 7。
+若孕妇先在 \(L_i\) 周未达标、后在 \(R_i\) 周达标，则仅知道 \(T_i\in(L_i,R_i]\)；首次检测即达标视为左删失，随访结束仍未达标视为右删失。该表述与区间删失分布估计的经典框架一致[3]。数据中三类数量分别为 43、217 和 7。
 
 在半周网格上定义离散风险
 
@@ -166,6 +170,12 @@ ANY 阳性率为 0.111，其 PR-AUC 高于按流行率随机排序的基准。�
 
 路线 B 加入绝对 Z 值、平方项和交互项后，ANY 平衡准确率反而降至 0.663，PR-AUC 降至 0.326。复杂模型没有在折外数据上获益，因此最终选择路线 A，体现“小样本下优先采用可校准、可解释模型”的原则。
 
+由于类别不平衡，本文采用 PR-AUC 而非仅报告普通准确率；PR 曲线在偏斜二分类数据上更能反映阳性类别的识别质量[4]。概率经附加 Sigmoid 映射校准[5]，并使用 Brier 分数评价概率误差[6]。
+
+![分组时点、敏感性与异常判定结果](../figures/figure2_results_overview.png)
+
+**图2** BMI分组、风险敏感性与女胎异常判定结果汇总
+
 ## 6 模型评价
 
 ### 6.1 优点
@@ -189,3 +199,25 @@ ANY 阳性率为 0.111，其 PR-AUC 高于按流行率随机排序的基准。�
 本文把男胎 Y 浓度的纵向关系、首次达标的删失结构和 BMI 分组决策统一在概率风险框架中。对附件人群，建议按 BMI 29.14 和 34.50 分为三组，并分别在第 14、15、16 周检测。该方案满足每组最少 35 人的稳定性约束，并在预设风险函数下优于统一第 12 周检测。风险偏好或测量阈值变化主要影响推荐时点，对 BMI 切点影响较小。
 
 女胎异常判定采用校准的正则化 Logistic 模型。总体异常识别获得中等区分能力，但仍存在漏检，不能替代诊断；多标签结果中 T21 的证据尤其不足。实际应用应保留人工复核和后续临床检查，并在获得更大规模、更多正常 BMI 和更多异常病例的数据后重新训练与外部验证。
+
+## 参考文献
+
+[1] Kinnings S L, Geis J A, Almasri E, et al. Factors affecting levels of circulating cell-free fetal DNA in maternal plasma and their implications for noninvasive prenatal testing[J]. Prenatal Diagnosis, 2015, 35(8): 816-822. DOI: 10.1002/pd.4625.
+
+[2] Hastie T, Tibshirani R. Generalized additive models[J]. Statistical Science, 1986, 1(3): 297-310. DOI: 10.1214/ss/1177013604.
+
+[3] Turnbull B W. The empirical distribution function with arbitrarily grouped, censored and truncated data[J]. Journal of the Royal Statistical Society: Series B, 1976, 38(3): 290-295. DOI: 10.1111/j.2517-6161.1976.tb01597.x.
+
+[4] Davis J, Goadrich M. The relationship between precision-recall and ROC curves[C]//Proceedings of the 23rd International Conference on Machine Learning. 2006: 233-240. DOI: 10.1145/1143844.1143874.
+
+[5] Platt J C. Probabilistic outputs for support vector machines and comparisons to regularized likelihood methods[M]//Advances in Large Margin Classifiers. Cambridge: MIT Press, 1999: 61-74.
+
+[6] Brier G W. Verification of forecasts expressed in terms of probability[J]. Monthly Weather Review, 1950, 78(1): 1-3. DOI: 10.1175/1520-0493(1950)078<0001:VOFEIT>2.0.CO;2.
+
+## 附录：支撑材料文件列表
+
+1. `tools/c_problem_experiment.py`：数据处理、路线A/B建模、分组优化、嵌套验证与敏感性分析。
+2. `workspace/experiments/experiment_plan.json`：正式批量实验配置。
+3. `workspace/experiments/FROZEN_RESULTS.json`：人工接受结果及SHA256清单。
+4. `workspace/claims/claim_ledger.json`：结论与冻结实验的对应关系。
+5. `workspace/figures/figure1_concentration_fit.png`、`figure2_results_overview.png`：论文插图。
