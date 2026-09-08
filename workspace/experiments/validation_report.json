@@ -1,0 +1,24 @@
+{
+  "applicable_checks": [
+    "assumptions",
+    "baseline",
+    "boundary_behavior",
+    "confidence_interval",
+    "constraint_feasibility",
+    "constraint_residual",
+    "convergence",
+    "multicollinearity",
+    "optimality_evidence",
+    "residual_diagnostics",
+    "robustness",
+    "sample_adequacy",
+    "sensitivity"
+  ],
+  "findings": [],
+  "passed": true,
+  "problem_types": [
+    "statistical",
+    "optimization"
+  ],
+  "unknown_checks_ignored": []
+}
