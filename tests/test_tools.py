@@ -17,6 +17,17 @@ from validate_results import CHECKS, validate
 
 
 class ToolTests(unittest.TestCase):
+    def test_paper_style_contract_contains_required_visual_rules(self) -> None:
+        guide = (ROOT / "PAPER_STYLE_GUIDE.md").read_text(encoding="utf-8")
+        for required in ("#1f77b4", "#ff7f0e", "coolwarm", "viridis", "禁止使用 `jet`",
+                         "10.5 pt", "600 dpi", "仅第一列保留 Y 轴标签", "仅最下行保留 X 轴标签"):
+            self.assertIn(required, guide)
+
+    def test_paper_style_contract_requires_model_adequacy(self) -> None:
+        guide = (ROOT / "PAPER_STYLE_GUIDE.md").read_text(encoding="utf-8")
+        for required in ("替代定义挑战", "增量价值", "不确定性", "类别不平衡"):
+            self.assertIn(required, guide)
+
     def test_data_profile_reports_core_fields(self) -> None:
         with tempfile.TemporaryDirectory() as directory:
             source = Path(directory) / "data.csv"

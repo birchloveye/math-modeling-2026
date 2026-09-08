@@ -29,6 +29,8 @@ P0 人工通读 → P1 分析 → 人工确认问题契约
 
 `SKILL_ROUTING.md` 给出 P0–P12 的逐阶段加载表。辅助 Skill 锁定到明确上游提交，并在 `THIRD_PARTY_NOTICES.md` 中保留来源与许可证信息。
 
+论文写作、科研配色、Python 出图、多子图标签、三线表、公式编号及逐页终审统一遵守 [`PAPER_STYLE_GUIDE.md`](PAPER_STYLE_GUIDE.md)。该规范同时要求在冻结前挑战关键事件定义，并区分“可追溯”与“模型充分”。
+
 `AGENTS.md` 是 Agent 运行契约；`WORKFLOW.md` 定义每个阶段的输入、输出和停止条件。JSON Schema 约束核心 artifact。专家指南与辅助 Skill 只在当前阶段确实需要时读取，以控制上下文和 Token 消耗。
 
 ## 快速开始
