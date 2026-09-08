@@ -1,0 +1,23 @@
+{
+  "plan_id": "c-problem-routes-ab-v2",
+  "runner": "tools/c_problem_experiment.py",
+  "base_config": {
+    "data_path": "workspace/data/附件.xlsx",
+    "folds": 5,
+    "min_group_size": 35,
+    "risk_delay": 1.0,
+    "risk_fail": 3.0,
+    "threshold": 0.04
+  },
+  "parameter_grid": {
+    "model_route": [
+      "A",
+      "B"
+    ]
+  },
+  "seeds": [
+    20260908
+  ],
+  "output_root": "workspace/experiments/runs",
+  "timeout_seconds": 600
+}
