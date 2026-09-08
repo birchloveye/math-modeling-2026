@@ -33,7 +33,7 @@ P0 人工通读 → P1 分析 → 人工确认问题契约
 
 ## 快速开始
 
-需要 Python 3.11 或更高版本。命令行工具仅使用 Python 标准库。
+需要 Python 3.11 或更高版本。核心命令行工具仅使用 Python 标准库；直接读取 XLSX 时需要可选依赖 `openpyxl`。
 
 1. 将原始赛题和人工标注放入 `workspace/problem/`，将数据放入 `workspace/data/`。
 2. 使用以下提示启动 P1：
@@ -65,6 +65,7 @@ P0 人工通读 → P1 分析 → 人工确认问题契约
 
 ```bash
 python tools/data_profile.py workspace/data/input.csv
+python tools/data_profile.py workspace/data/input.xlsx
 python tools/schema_check.py schemas/problem.schema.json workspace/problem/problem_contract.json
 python tools/batch_experiment.py workspace/experiments/experiment_plan.json
 python tools/validate_results.py --evidence workspace/experiments/validation_evidence.json

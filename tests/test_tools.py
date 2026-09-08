@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import importlib.util
 import json
 import sys
 import tempfile
@@ -24,6 +25,27 @@ class ToolTests(unittest.TestCase):
             self.assertEqual(result["shape"], [3, 3])
             self.assertEqual(result["suspicious_duplicate_rows"], 1)
             self.assertEqual(result["columns"]["value"]["numeric"]["max"], 20.0)
+
+    @unittest.skipUnless(importlib.util.find_spec("openpyxl"), "openpyxl is not installed")
+    def test_data_profile_reads_all_xlsx_sheets_and_names_blank_headers(self) -> None:
+        import openpyxl
+
+        with tempfile.TemporaryDirectory() as directory:
+            source = Path(directory) / "data.xlsx"
+            workbook = openpyxl.Workbook()
+            first = workbook.active
+            first.title = "男胎"
+            first.append(["孕妇代码", None, "数值"])
+            first.append(["A001", None, 1.5])
+            second = workbook.create_sheet("女胎")
+            second.append(["孕妇代码", "标签"])
+            second.append(["B001", "正常"])
+            workbook.save(source)
+            result = profile(source)
+            self.assertEqual(result["format"], "xlsx")
+            self.assertEqual(result["sheet_count"], 2)
+            self.assertEqual(result["sheets"][0]["shape"], [1, 3])
+            self.assertIn("column_B", result["sheets"][0]["columns"])
 
     def test_validation_fails_closed_and_is_problem_aware(self) -> None:
         report = validate(["forecasting"], {})
