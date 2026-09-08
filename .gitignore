@@ -5,6 +5,7 @@ __pycache__/
 .DS_Store
 workspace/data/*
 !workspace/data/.gitkeep
+!workspace/data/data_summary.json
 workspace/experiments/*
 !workspace/experiments/.gitkeep
 workspace/figures/*
