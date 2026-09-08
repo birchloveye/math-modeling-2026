@@ -127,10 +127,25 @@ def regression_cv(x: np.ndarray, y: np.ndarray, groups: np.ndarray, route: str, 
         beta, scaler = ridge_random_intercept(x[~valid], y[~valid], groups[~valid], 1.0 if route == "B" else 3.0)
         predictions[valid] = predict_fixed(x[valid], beta, scaler)
     residual = y - predictions
+    centered = residual - np.mean(residual)
+    rng = np.random.default_rng(seed + 17)
+    unique = np.array(sorted(set(groups.tolist())))
+    bootstrap_rmse = []
+    for _ in range(300):
+        sampled = rng.choice(unique, size=len(unique), replace=True)
+        indices = np.concatenate([np.flatnonzero(groups == subject) for subject in sampled])
+        bootstrap_rmse.append(float(np.sqrt(np.mean(residual[indices] ** 2))))
+    z = standardize_apply(x, *standardize_fit(x))
     return {
         "grouped_cv_rmse": float(np.sqrt(np.mean(residual**2))),
         "grouped_cv_mae": float(np.mean(np.abs(residual))),
         "grouped_cv_r2": float(1.0 - np.sum(residual**2) / np.sum((y - np.mean(y)) ** 2)),
+        "group_bootstrap_rmse_ci95_low": float(np.quantile(bootstrap_rmse, 0.025)),
+        "group_bootstrap_rmse_ci95_high": float(np.quantile(bootstrap_rmse, 0.975)),
+        "residual_mean": float(np.mean(residual)),
+        "residual_skewness": float(np.mean(centered**3) / max(np.mean(centered**2) ** 1.5, 1e-12)),
+        "residual_fitted_correlation": float(np.corrcoef(residual, predictions)[0, 1]),
+        "fixed_design_condition_number": float(np.linalg.cond(np.column_stack([np.ones(len(z)), z]))),
     }
 
 
@@ -176,7 +191,7 @@ def hazard_raw(women: list[dict[str, Any]], weeks: np.ndarray) -> tuple[np.ndarr
     return np.stack(blocks), names
 
 
-def fit_interval_hazard(women: list[dict[str, Any]], weeks: np.ndarray, penalty: float, iterations: int = 1000) -> tuple[np.ndarray, dict[str, list[float]], list[float]]:
+def fit_interval_hazard(women: list[dict[str, Any]], weeks: np.ndarray, penalty: float, iterations: int = 3000) -> tuple[np.ndarray, dict[str, list[float]], list[float]]:
     raw, _ = hazard_raw(women, weeks)
     mean, scale = standardize_fit(raw.reshape(-1, raw.shape[-1]))
     x = standardize_apply(raw, mean, scale)
@@ -235,6 +250,7 @@ def optimize_groups(women: list[dict[str, Any]], cdf: np.ndarray, weeks: np.ndar
     candidates = sorted(set(float(x) for x in np.quantile(bmi, np.arange(0.15, 0.91, 0.1))))
     delay = np.maximum(weeks - 12.0, 0.0) / 15.0
     best: dict[str, Any] | None = None
+    feasible_partitions = 0
     import itertools
     for groups in range(3, 6):
         for cuts in itertools.combinations(candidates, groups - 1):
@@ -242,6 +258,7 @@ def optimize_groups(women: list[dict[str, Any]], cdf: np.ndarray, weeks: np.ndar
             sizes = [int(np.sum(labels == g)) for g in range(groups)]
             if min(sizes) < min_size:
                 continue
+            feasible_partitions += 1
             total, details = 0.0, []
             for g in range(groups):
                 mask = labels == g
@@ -255,6 +272,7 @@ def optimize_groups(women: list[dict[str, Any]], cdf: np.ndarray, weeks: np.ndar
                 best = {"objective": score, "cuts": list(cuts), "groups": details}
     if best is None:
         raise RuntimeError("没有满足最小样本量约束的BMI有序分组")
+    best["feasible_partitions_evaluated"] = feasible_partitions
     return best
 
 
@@ -311,6 +329,7 @@ def female_matrix(rows: list[dict[str, Any]]) -> tuple[np.ndarray, dict[str, np.
     features = ["13号染色体的Z值", "18号染色体的Z值", "21号染色体的Z值", "X染色体的Z值", "GC含量", "原始读段数", "在参考基因组上比对的比例", "重复读段的比例", "唯一比对的读段数", "被过滤掉读段数的比例", "孕妇BMI", "年龄"]
     x = np.array([[num(r[f]) for f in features] for r in rows])
     labels = {tag: np.array([1.0 if tag in str(r["染色体的非整倍体"] or "") else 0.0 for r in rows]) for tag in ["T13", "T18", "T21"]}
+    labels = {"ANY": np.array([1.0 if r["染色体的非整倍体"] else 0.0 for r in rows]), **labels}
     return x, labels, features, np.array([str(r["孕妇代码"]) for r in rows])
 
 
@@ -359,6 +378,8 @@ def main() -> int:
     weeks = np.arange(10.0, 25.01, 0.5)
     hazard_beta, hazard_scaler, likelihood_history = fit_interval_hazard(women, weeks, 0.5 if route == "B" else 2.0)
     cdf = predict_cdf(women, weeks, hazard_beta, hazard_scaler)
+    week_12_index = int(np.argmin(np.abs(weeks - 12.0)))
+    uniform_12_objective = float(np.mean(float(cfg["risk_fail"]) * (1.0 - cdf[:, week_12_index])))
     if route == "B":
         grouping = optimize_groups(women, cdf, weeks, int(cfg["min_group_size"]), float(cfg["risk_fail"]), float(cfg["risk_delay"]))
     else:
@@ -372,7 +393,7 @@ def main() -> int:
     metrics = {"route": route, "q1": q1_cv, "q2_q3_objective": grouping["objective"], "q4": {k: {m: v for m, v in d.items() if m in {"prevalence", "sensitivity", "specificity", "balanced_accuracy", "pr_auc", "brier"}} for k, d in q4["labels"].items()}}
     results = {"route": route, "data": {"male_rows": len(male), "male_women": len(women), "female_rows": len(female), "female_women": q4["n_women"], "censor_counts": censor_counts},
                "q1": {"feature_names": names, "fixed_coefficients_standardized": beta.tolist(), "scaler": scaler, "cv": q1_cv},
-               "q2_q3": {"week_grid": weeks.tolist(), "selected_grouping": grouping, "risk_sensitivity": sensitivities, "interval_loglik_history": likelihood_history}, "q4": q4,
+               "q2_q3": {"week_grid": weeks.tolist(), "selected_grouping": grouping, "uniform_12_objective": uniform_12_objective, "risk_sensitivity": sensitivities, "interval_loglik_history": likelihood_history}, "q4": q4,
                "limitations": ["附件样本偏向高BMI人群，分组不应外推至未覆盖人群", "离散风险模型使用0.5周网格", "Q4保留全部检测记录但严格按孕妇代码分折", "AE未作为预测特征"]}
     write_json(args.output / "metrics.json", metrics)
     write_json(args.output / "results.json", results)
