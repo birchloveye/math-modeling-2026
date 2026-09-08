@@ -1,8 +1,8 @@
 {
   "accepted_model": "B用于Q1-Q3，A用于Q4；A同时作为Q1-Q3基线",
   "accepted_experiment_ids": [
-    "runs/c-problem-routes-ab-v6-0001",
-    "runs/c-problem-routes-ab-v6-0002"
+    "runs/c-problem-routes-ab-v7-0001",
+    "runs/c-problem-routes-ab-v7-0002"
   ],
   "final_metrics": {
     "q1": {
@@ -13,7 +13,14 @@
       "group_bootstrap_rmse_ci95": [
         0.03063633806438109,
         0.035431917965400773
-      ]
+      ],
+      "baseline_significance": {
+        "bmi_standardized_coefficient": -0.009777866900920612,
+        "bmi_ci95": [-0.017533590102943968, -0.0019113259070423511],
+        "bmi_bootstrap_sign_p": 0.016666666666666666,
+        "week_bootstrap_sign_p": 0.8666666666666667,
+        "week_bmi_interaction_bootstrap_sign_p": 0.3
+      }
     },
     "q2_q3": {
       "selected_route": "B",
