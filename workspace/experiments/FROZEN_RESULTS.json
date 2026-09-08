@@ -1,0 +1,75 @@
+{
+  "accepted_experiment_ids": [
+    "runs/c-problem-routes-ab-v6-0001",
+    "runs/c-problem-routes-ab-v6-0002"
+  ],
+  "accepted_model": "B用于Q1-Q3，A用于Q4；A同时作为Q1-Q3基线",
+  "final_figures": [],
+  "final_metrics": {
+    "q1": {
+      "group_bootstrap_rmse_ci95": [
+        0.03063633806438109,
+        0.035431917965400773
+      ],
+      "grouped_cv_mae": 0.026947605958566687,
+      "grouped_cv_r2": 0.02541589107739395,
+      "grouped_cv_rmse": 0.03307442436454546,
+      "selected_route": "B"
+    },
+    "q2_q3": {
+      "attainment_probabilities": [
+        0.9354679553740851,
+        0.9113134938390627,
+        0.8437631551520383
+      ],
+      "bmi_cuts": [
+        29.13505888793401,
+        34.50256132317717
+      ],
+      "group_sizes": [
+        40,
+        187,
+        40
+      ],
+      "optimized_objective": 0.5155632834949477,
+      "recommended_weeks": [
+        14.0,
+        15.0,
+        16.0
+      ],
+      "selected_route": "B",
+      "uniform_week_12_objective": 0.7229282100220504
+    },
+    "q4": {
+      "balanced_accuracy": 0.7120484935915219,
+      "brier": 0.08501355934675647,
+      "pr_auc": 0.37591627874116756,
+      "prevalence": 0.11074380165289256,
+      "primary_label": "ANY",
+      "selected_route": "A",
+      "sensitivity": 0.582089552238806,
+      "specificity": 0.8420074349442379
+    }
+  },
+  "final_tables": [],
+  "freeze_timestamp": "2026-09-08T09:20:21.780829+00:00",
+  "sha256": {
+    "tools/c_problem_experiment.py": "1c1eb169ed16d91310f3bd3f642db255f0e598185ee78b0f3562f5b0ee643071",
+    "workspace/data/data_summary.json": "a18266d3ab68ae426c0d0313c8841d0ef736d13eb8da5ddc00e062041fdf5b9e",
+    "workspace/data/附件.xlsx": "14827156218bd4f7e4f16db4aa6d9f757c6648379e038ae6c6b58383648614af",
+    "workspace/experiments/experiment_plan.json": "319241b78b5d4f1516492f55d8eb6252fa00d1dc44f318dfb4e4dfbf72a59f2a",
+    "workspace/experiments/runs/c-problem-routes-ab-v6-0001/config.json": "a1b13d90c78f6f8c8e8141df3517d5f6f59658f4a35a72d11a417b2ac8b51daf",
+    "workspace/experiments/runs/c-problem-routes-ab-v6-0001/metrics.json": "e2d8710d14700751aaba00c10569273a728ce9be88e55d743293e42c5debf990",
+    "workspace/experiments/runs/c-problem-routes-ab-v6-0001/results.json": "93e5c06fa897c88df04d9728bfb880c49fabc37bff74a974b1ca78adb5f21322",
+    "workspace/experiments/runs/c-problem-routes-ab-v6-0001/runtime.json": "75d213e68b1427e74ea718c1526f13749b1213d4d590798b0126122148468f30",
+    "workspace/experiments/runs/c-problem-routes-ab-v6-0002/config.json": "627dcf82f6ff842adeaa104783d7148d63618e347eb9cf95e1f818411ccb8489",
+    "workspace/experiments/runs/c-problem-routes-ab-v6-0002/metrics.json": "003fbe91a422511d08bc24e530472095eab008b2223a554f42848cb2f7e717e5",
+    "workspace/experiments/runs/c-problem-routes-ab-v6-0002/results.json": "9eb5951e7dbb13291a3875df6fcd8e2b3c8d21b3472a2fef610c9ba0d8fc6a3a",
+    "workspace/experiments/runs/c-problem-routes-ab-v6-0002/runtime.json": "f5a4c8ddfa6d477e83574f65f06e647e7f7d370b5c0f0bf4e181ce3165352b48",
+    "workspace/experiments/validation_evidence.json": "58e63b1cd0160a5514dcf131fbb0990513ac9204e7f48f8d1a48700780bc29b0",
+    "workspace/experiments/validation_report.json": "c2fa02fd1c99ec287e9f5c9775c70be866a46e306a8fcbf5af212fb1b3064691",
+    "workspace/models/selected_model.md": "5aa648826fbb25287aee7edd79c983bc4a6825e5a10b530ec10e251aca901f0b",
+    "workspace/problem/problem_contract.json": "c17b9d35d18906877b54dc6fc932ab7be3a91769189df348c2b919554b0a554a",
+    "workspace/research/P7_validation_review.md": "e702a387a005f41e744fd2fee46ebbf42922d87c743d9b1adc7e17ceee6eb9e2"
+  }
+}
