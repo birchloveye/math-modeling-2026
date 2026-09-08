@@ -9,7 +9,7 @@ description: 依据冻结结果和证据账本撰写或独立审查数学建模�
 
 ## Writer 模式
 
-阅读已批准问题契约、最终模型、`workspace/experiments/FROZEN_RESULTS.json`、已验证或暂定支持的 Claim Ledger，以及冻结的图片和表格。写作前运行 Claim 与一致性检查工具。只有 `verified` Claim 可以支撑最终结论；`supported` 必须明确写成暂定结论；不得把 `draft` 或 `rejected` 写成事实。
+阅读已批准问题契约、最终模型、`workspace/experiments/FROZEN_RESULTS.json`、已验证或暂定支持的 Claim Ledger，以及冻结的图片和表格。需要创建或检查 PDF 时，按路由加载 `skills/pdf/SKILL.md`，但不得让 PDF 工具生成新结论。写作前运行 Claim 与一致性检查工具。只有 `verified` Claim 可以支撑最终结论；`supported` 必须明确写成暂定结论；不得把 `draft` 或 `rejected` 写成事实。
 
 每个重要数字或结论都必须映射到合格 Claim 与冻结来源。不得在正文中临时计算新的核心结果。诚实说明假设和局限，并回答问题契约中的每个小问。
 

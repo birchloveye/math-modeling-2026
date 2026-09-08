@@ -5,7 +5,7 @@ description: 根据题型选择检查项，验证数学建模结果、执行证�
 
 # 题型感知验证
 
-读取问题契约、选定模型、实验 artifact，以及仅与已声明题型相关的专家文件。使用适用检查证据运行 `tools/validate_results.py`。适用检查缺少证据时必须失败；真正不适用的检查应省略并写明理由，而不是伪装为通过。
+读取问题契约、选定模型、实验 artifact，以及仅与已声明题型相关的专家文件。实验包含 Notebook 时，按路由加载 `skills/jupyter-notebook/SKILL.md` 并验证其可从头执行，但仍以标准 JSON 实验 artifact 为权威来源。使用适用检查证据运行 `tools/validate_results.py`。适用检查缺少证据时必须失败；真正不适用的检查应省略并写明理由，而不是伪装为通过。
 
 按题型检查：
 

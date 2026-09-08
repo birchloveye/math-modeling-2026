@@ -22,7 +22,14 @@ P0 人工通读 → P1 分析 → 人工确认问题契约
 - `validate`：根据题型选择检查；缺少适用证据时按失败处理。
 - `paper`：仅依据冻结证据写作，或执行独立审稿。
 
-`AGENTS.md` 是 Agent 运行契约；`WORKFLOW.md` 定义每个阶段的输入、输出和停止条件。JSON Schema 约束核心 artifact。专家指南只在对应题型需要时读取，以控制上下文和 Token 消耗。
+此外，仓库从 OpenAI 官方 GitHub Skill 库接入了两个辅助 Skill：
+
+- `jupyter-notebook`：用于数据探索、模型原型和可复现 Notebook；不能替代正式批量实验。
+- `pdf`：用于赛题 PDF 阅读、论文渲染和逐页视觉审查；不能生成未经验证的结论。
+
+`SKILL_ROUTING.md` 给出 P0–P12 的逐阶段加载表。辅助 Skill 锁定到明确上游提交，并在 `THIRD_PARTY_NOTICES.md` 中保留来源与许可证信息。
+
+`AGENTS.md` 是 Agent 运行契约；`WORKFLOW.md` 定义每个阶段的输入、输出和停止条件。JSON Schema 约束核心 artifact。专家指南与辅助 Skill 只在当前阶段确实需要时读取，以控制上下文和 Token 消耗。
 
 ## 快速开始
 

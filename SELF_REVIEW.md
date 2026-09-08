@@ -4,7 +4,7 @@
 
 ## 审查结论
 
-仓库已实现 P0–P12 全部阶段、五个职责分离的 Skill、四个人工 Gate、四个严格 Schema、八份按需专家指南、确定性辅助工具、Workspace 契约与 Benchmark 说明。运行契约阻止系统自动跨越 P1、P4、P7/P8 和 P11/P12。Writer 模式受 Freeze 证据和 Claim 状态约束。
+仓库已实现 P0–P12 全部阶段、五个职责分离的核心 Skill、两个按 artifact 类型加载的官方辅助 Skill、四个人工 Gate、四个严格 Schema、八份按需专家指南、确定性辅助工具、Workspace 契约与 Benchmark 说明。运行契约阻止系统自动跨越 P1、P4、P7/P8 和 P11/P12。Writer 模式受 Freeze 证据和 Claim 状态约束。
 
 ## 风险审查
 
@@ -15,6 +15,7 @@
 - 代理指标：不强制固定图片、算法、消融或实验数量。候选路线数量取决于是否存在真正不同的方案。
 - Schema 与 Skill 一致性：字段名和枚举与实施 brief 一致。
 - Quick Start：提示词指明所需文件，并在目标 Gate 停止；只有明确批准后才继续。
+- 外部 Skill：`jupyter-notebook` 与 `pdf` 锁定到已审查的 OpenAI 上游提交，保留 Apache-2.0 许可证，并通过 `SKILL_ROUTING.md` 限定使用阶段。
 
 ## 已执行验证
 

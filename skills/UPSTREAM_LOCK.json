@@ -1,0 +1,16 @@
+{
+  "repository": "https://github.com/openai/skills",
+  "commit": "49f948faa9258a0c61caceaf225e179651397431",
+  "skills": [
+    {
+      "local_path": "skills/jupyter-notebook",
+      "source_path": "skills/.curated/jupyter-notebook",
+      "license": "Apache-2.0"
+    },
+    {
+      "local_path": "skills/pdf",
+      "source_path": "skills/.curated/pdf",
+      "license": "Apache-2.0"
+    }
+  ]
+}

@@ -5,7 +5,7 @@ description: 将数学建模赛题分析为机器可读的问题契约，并停�
 
 # 分析赛题
 
-阅读 `AGENTS.md`、`WORKFLOW.md`、原始赛题，以及 `workspace/problem/` 中的人工标注。只生成符合 `schemas/problem.schema.json` 的 `workspace/problem/problem_contract.json`。
+阅读 `AGENTS.md`、`WORKFLOW.md`、`SKILL_ROUTING.md`、原始赛题，以及 `workspace/problem/` 中的人工标注。只生成符合 `schemas/problem.schema.json` 的 `workspace/problem/problem_contract.json`。原题为 PDF 且版面影响理解时，按路由加载 `skills/pdf/SKILL.md`；否则不要加载。
 
 拆分所有小问；识别输入、输出、决策变量、已知约束、隐含约束、不确定点、可验证目标和小问之间的有向依赖。解决歧义时引用或指出题目依据；真正无法确定的解释必须显式保留。不要进行深入数据分析，也不要提出模型路线。
 
