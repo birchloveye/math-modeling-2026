@@ -26,12 +26,14 @@ from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.lib.units import cm
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
-from reportlab.platypus import Image, KeepTogether, PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from reportlab.platypus import HRFlowable, Image, KeepTogether, PageBreak, Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
 
 sys.path.insert(0, str(ROOT / "tools"))
 from c_problem_experiment import design_concentration, num, predict_fixed, read_sheet, week_num  # noqa: E402
 
 COLORS = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"]
+HEADING_COLOR = "#1f4e79"
+ACCENT_COLOR = "#b8860b"
 SONG = Path(r"C:\Windows\Fonts\simsun.ttc")
 HEI = Path(r"C:\Windows\Fonts\simhei.ttf")
 
@@ -197,7 +199,8 @@ def build_pdf(markdown_path: Path, output_pdf: Path, figures_dir: Path) -> None:
     body = ParagraphStyle("BodyCN", fontName="SimSun", fontSize=12, leading=20, firstLineIndent=24,
                           alignment=TA_LEFT, textColor=colors.HexColor("#222222"), spaceAfter=4)
     abstract_body = ParagraphStyle("AbstractCN", parent=body, firstLineIndent=24, leading=20)
-    h1 = ParagraphStyle("H1CN", fontName="SimHei", fontSize=15, leading=22, spaceBefore=10, spaceAfter=7)
+    h1 = ParagraphStyle("H1CN", fontName="SimHei", fontSize=15, leading=22, spaceBefore=10, spaceAfter=7,
+                        textColor=colors.HexColor(HEADING_COLOR))
     h2 = ParagraphStyle("H2CN", fontName="SimHei", fontSize=13, leading=20, spaceBefore=8, spaceAfter=5)
     title_style = ParagraphStyle("TitleCN", fontName="SimHei", fontSize=18, leading=27, alignment=TA_CENTER, spaceAfter=20)
     eq_style = ParagraphStyle("EquationCN", fontName="SimSun", fontSize=11, leading=18, alignment=TA_CENTER, spaceBefore=4, spaceAfter=6)
@@ -208,7 +211,10 @@ def build_pdf(markdown_path: Path, output_pdf: Path, figures_dir: Path) -> None:
     lines = markdown_path.read_text(encoding="utf-8").splitlines()
     story = []
     title = lines[0].lstrip("# ")
-    story.extend([Spacer(1, 0.7 * cm), Paragraph(clean_inline(title), title_style), Paragraph("摘要", h1)])
+    abstract_title = ParagraphStyle("AbstractTitle", parent=h1, alignment=TA_CENTER, textColor=colors.HexColor("#222222"))
+    story.extend([Spacer(1, 0.7 * cm), Paragraph(clean_inline(title), title_style),
+                  HRFlowable(width="42%", thickness=0.8, color=colors.HexColor(ACCENT_COLOR), spaceAfter=12),
+                  Paragraph("摘要", abstract_title)])
     i = lines.index("## 摘要") + 1
     while i < len(lines) and not lines[i].startswith("## 1 "):
         line = lines[i].strip()
@@ -222,6 +228,7 @@ def build_pdf(markdown_path: Path, output_pdf: Path, figures_dir: Path) -> None:
 
     table_rows: list[list[str]] = []
     equation: list[str] = []
+    equation_number = 0
     in_refs = False
     while i < len(lines):
         raw = lines[i]
@@ -232,7 +239,15 @@ def build_pdf(markdown_path: Path, output_pdf: Path, figures_dir: Path) -> None:
             while i < len(lines) and lines[i].strip() != r"\]":
                 equation.append(lines[i].strip())
                 i += 1
-            story.append(Paragraph(html.escape(equation_text(" ".join(equation))), eq_style))
+            equation_number += 1
+            eq = Table([[Paragraph(html.escape(equation_text(" ".join(equation))), eq_style),
+                         Paragraph(f"({equation_number})", eq_style)]],
+                       colWidths=[14.8 * cm, 1.0 * cm])
+            eq.setStyle(TableStyle([("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
+                                    ("ALIGN", (1, 0), (1, 0), "RIGHT"),
+                                    ("LEFTPADDING", (0, 0), (-1, -1), 0),
+                                    ("RIGHTPADDING", (0, 0), (-1, -1), 0)]))
+            story.append(eq)
         elif line.startswith("!["):
             match = re.match(r"!\[[^]]*\]\(([^)]+)\)", line)
             if match:
@@ -259,7 +274,6 @@ def build_pdf(markdown_path: Path, output_pdf: Path, figures_dir: Path) -> None:
             table = Table(data, colWidths=widths, repeatRows=1, hAlign="CENTER")
             table.setStyle(TableStyle([
                 ("FONTNAME", (0, 0), (-1, -1), "SimSun"), ("FONTSIZE", (0, 0), (-1, -1), 10.5),
-                ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#dce6f1")),
                 ("LINEBELOW", (0, 0), (-1, 0), 0.9, colors.HexColor("#444444")),
                 ("LINEBELOW", (0, -1), (-1, -1), 0.9, colors.HexColor("#444444")),
                 ("ALIGN", (1, 1), (-1, -1), "CENTER"), ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),

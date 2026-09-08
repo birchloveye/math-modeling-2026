@@ -74,6 +74,7 @@
     "workspace/paper/review_report.md",
     "workspace/paper/final_review.md",
     "workspace/paper/consistency_report.json",
+    "PAPER_STYLE_GUIDE.md",
     "tools/c_problem_experiment.py",
     "tools/render_c_problem_paper.py",
     "workspace/paper/draft.md",
