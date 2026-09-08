@@ -35,7 +35,7 @@ P0 人工通读 → P1 分析 → 人工确认问题契约
 
 需要 Python 3.11 或更高版本。核心命令行工具仅使用 Python 标准库；直接读取 XLSX 时需要可选依赖 `openpyxl`。
 
-正式参数研究的 `workspace/experiments/experiment_plan.json` 会纳入版本控制；批量运行产生的各实验目录仍默认忽略，以免误提交大体积或含原始数据派生信息的结果。
+正式参数研究的 `workspace/experiments/experiment_plan.json`、验证证据与验证报告会纳入版本控制；批量运行产生的各实验目录仍默认忽略，以免误提交大体积或含原始数据派生信息的结果。
 
 1. 将原始赛题和人工标注放入 `workspace/problem/`，将数据放入 `workspace/data/`。
 2. 使用以下提示启动 P1：

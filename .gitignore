@@ -9,6 +9,8 @@ workspace/data/*
 workspace/experiments/*
 !workspace/experiments/.gitkeep
 !workspace/experiments/experiment_plan.json
+!workspace/experiments/validation_evidence.json
+!workspace/experiments/validation_report.json
 workspace/figures/*
 !workspace/figures/.gitkeep
 workspace/paper/*
