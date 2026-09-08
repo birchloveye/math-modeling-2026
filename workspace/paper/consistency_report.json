@@ -1,0 +1,13 @@
+{
+  "findings": [],
+  "passed": true,
+  "used_claims": [
+    "Q1-C01",
+    "Q1-C02",
+    "Q2-C01",
+    "Q3-C01",
+    "Q4-C01",
+    "Q4-C02"
+  ],
+  "verified_claims_not_cited": []
+}
