@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "experiment.schema.json",
+  "title": "实验计划",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["plan_id", "runner", "base_config", "parameter_grid", "seeds", "output_root"],
+  "properties": {
+    "plan_id": {"type": "string", "pattern": "^[A-Za-z0-9._-]+$"},
+    "runner": {"type": "string", "minLength": 1},
+    "base_config": {"type": "object"},
+    "parameter_grid": {"type": "object", "minProperties": 1, "additionalProperties": {"type": "array", "minItems": 1}},
+    "seeds": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "integer", "minimum": 0}},
+    "output_root": {"type": "string", "minLength": 1},
+    "timeout_seconds": {"type": "number", "exclusiveMinimum": 0}
+  }
+}

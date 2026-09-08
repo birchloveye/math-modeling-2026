@@ -1,0 +1,14 @@
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.DS_Store
+workspace/data/*
+!workspace/data/.gitkeep
+workspace/experiments/*
+!workspace/experiments/.gitkeep
+workspace/figures/*
+!workspace/figures/.gitkeep
+workspace/paper/*
+!workspace/paper/.gitkeep
+

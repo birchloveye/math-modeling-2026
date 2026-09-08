@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "model.schema.json",
+  "title": "模型卡",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["route_id", "core_idea", "assumptions", "key_equations", "required_data", "expected_strengths", "main_risks", "validation_plan", "implementation_cost", "interpretability", "innovation_potential"],
+  "properties": {
+    "route_id": {"type": "string", "pattern": "^[A-Z][A-Z0-9_-]*$"},
+    "core_idea": {"type": "string", "minLength": 1},
+    "assumptions": {"$ref": "#/$defs/nonemptyStrings"},
+    "key_equations": {"$ref": "#/$defs/nonemptyStrings"},
+    "required_data": {"$ref": "#/$defs/nonemptyStrings"},
+    "expected_strengths": {"$ref": "#/$defs/nonemptyStrings"},
+    "main_risks": {"$ref": "#/$defs/nonemptyStrings"},
+    "validation_plan": {"$ref": "#/$defs/nonemptyStrings"},
+    "implementation_cost": {"enum": ["low", "medium", "high"]},
+    "interpretability": {"enum": ["low", "medium", "high"]},
+    "innovation_potential": {"enum": ["low", "medium", "high"]}
+  },
+  "$defs": {"nonemptyStrings": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}}
+}

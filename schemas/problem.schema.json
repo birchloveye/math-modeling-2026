@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "problem.schema.json",
+  "title": "问题契约",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["title", "problem_type", "questions", "inputs", "outputs", "decision_variables", "known_constraints", "implicit_constraints", "uncertainties", "verifiable_objectives", "dependencies"],
+  "properties": {
+    "title": {"type": "string", "minLength": 1},
+    "problem_type": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"enum": ["forecasting", "optimization", "statistical", "graph", "simulation", "ode_pde", "other"]}},
+    "questions": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/question"}},
+    "inputs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "outputs": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "decision_variables": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "known_constraints": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "implicit_constraints": {"type": "array", "items": {"type": "string", "minLength": 1}},
+    "uncertainties": {"type": "array", "items": {"$ref": "#/$defs/uncertainty"}},
+    "verifiable_objectives": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}},
+    "dependencies": {"type": "array", "items": {"$ref": "#/$defs/dependency"}}
+  },
+  "$defs": {
+    "question": {"type": "object", "additionalProperties": false, "required": ["id", "statement", "required_outputs"], "properties": {"id": {"type": "string", "pattern": "^Q[1-9][0-9]*$"}, "statement": {"type": "string", "minLength": 1}, "required_outputs": {"type": "array", "minItems": 1, "items": {"type": "string", "minLength": 1}}}},
+    "uncertainty": {"type": "object", "additionalProperties": false, "required": ["item", "impact", "needs_human_answer"], "properties": {"item": {"type": "string", "minLength": 1}, "impact": {"type": "string", "minLength": 1}, "needs_human_answer": {"type": "boolean"}}},
+    "dependency": {"type": "object", "additionalProperties": false, "required": ["from", "to", "reason"], "properties": {"from": {"type": "string", "pattern": "^Q[1-9][0-9]*$"}, "to": {"type": "string", "pattern": "^Q[1-9][0-9]*$"}, "reason": {"type": "string", "minLength": 1}}}
+  }
+}
