@@ -325,39 +325,70 @@ def classification_metrics(y: np.ndarray, p: np.ndarray, threshold: float) -> di
             "pr_auc": average_precision(y, p), "brier": float(np.mean((p - y) ** 2)), "tp": tp, "tn": tn, "fp": fp, "fn": fn}
 
 
-def female_matrix(rows: list[dict[str, Any]]) -> tuple[np.ndarray, dict[str, np.ndarray], list[str], np.ndarray]:
-    features = ["13号染色体的Z值", "18号染色体的Z值", "21号染色体的Z值", "X染色体的Z值", "GC含量", "原始读段数", "在参考基因组上比对的比例", "重复读段的比例", "唯一比对的读段数", "被过滤掉读段数的比例", "孕妇BMI", "年龄"]
+def female_matrix(rows: list[dict[str, Any]], route: str) -> tuple[np.ndarray, dict[str, np.ndarray], list[str], np.ndarray]:
+    features = ["13号染色体的Z值", "18号染色体的Z值", "21号染色体的Z值", "X染色体的Z值", "X染色体浓度",
+                "GC含量", "13号染色体的GC含量", "18号染色体的GC含量", "21号染色体的GC含量", "原始读段数",
+                "在参考基因组上比对的比例", "重复读段的比例", "唯一比对的读段数", "被过滤掉读段数的比例",
+                "孕妇BMI", "年龄", "身高", "体重", "怀孕次数", "生产次数"]
     x = np.array([[num(r[f]) for f in features] for r in rows])
+    week = np.array([week_num(r["检测孕周"]) for r in rows])[:, None]
+    ivf = np.array([0.0 if str(r["IVF妊娠"]) == "自然受孕" else 1.0 for r in rows])[:, None]
+    x = np.column_stack([x, week, ivf])
+    features += ["检测孕周", "辅助生殖指示"]
+    if route == "B":
+        z = x[:, :4]
+        extra = np.column_stack([np.abs(z), z * z, np.nanmax(np.abs(z), axis=1), x[:, 13] * x[:, 14], week[:, 0] * x[:, 14]])
+        x = np.column_stack([x, extra])
+        features += [f"abs({name})" for name in features[:4]] + [f"square({name})" for name in features[:4]]
+        features += ["最大绝对Z值", "过滤比例×BMI", "孕周×BMI"]
     labels = {tag: np.array([1.0 if tag in str(r["染色体的非整倍体"] or "") else 0.0 for r in rows]) for tag in ["T13", "T18", "T21"]}
     labels = {"ANY": np.array([1.0 if r["染色体的非整倍体"] else 0.0 for r in rows]), **labels}
     return x, labels, features, np.array([str(r["孕妇代码"]) for r in rows])
 
 
-def q4_cv(rows: list[dict[str, Any]], folds: int, seed: int, penalty: float) -> dict[str, Any]:
-    x, labels, features, ids = female_matrix(rows)
+def q4_cv(rows: list[dict[str, Any]], folds: int, seed: int, route: str) -> dict[str, Any]:
+    x, labels, features, ids = female_matrix(rows, route)
     fold_masks = group_folds(ids, folds, seed)
     output: dict[str, Any] = {"features": features, "n_records": len(ids), "n_women": len(set(ids.tolist())), "labels": {}}
     for tag, y in labels.items():
         pred = np.full(len(y), np.nan)
         chosen_thresholds = []
+        chosen_penalties = []
         for valid in fold_masks:
             mean, scale = standardize_fit(x[~valid])
             train = np.column_stack([np.ones(np.sum(~valid)), standardize_apply(x[~valid], mean, scale)])
             test = np.column_stack([np.ones(np.sum(valid)), standardize_apply(x[valid], mean, scale)])
-            beta = fit_logistic(train, y[~valid], penalty)
-            train_prob = sigmoid(train @ beta)
+            train_ids = ids[~valid]
+            inner_masks = group_folds(train_ids, 3, seed + 101)
+            best_penalty, best_ap, best_inner = None, -1.0, None
+            for penalty in [0.1, 1.0, 10.0]:
+                inner_pred = np.full(len(train_ids), np.nan)
+                for inner_valid in inner_masks:
+                    beta_inner = fit_logistic(train[~inner_valid], y[~valid][~inner_valid], penalty, iterations=600)
+                    inner_pred[inner_valid] = sigmoid(train[inner_valid] @ beta_inner)
+                score = average_precision(y[~valid], inner_pred) or 0.0
+                if score > best_ap:
+                    best_penalty, best_ap, best_inner = penalty, score, inner_pred
+            assert best_penalty is not None and best_inner is not None
+            raw_inner = np.log(np.clip(best_inner, 1e-6, 1 - 1e-6) / np.clip(1 - best_inner, 1e-6, 1))
+            calibration = fit_logistic(np.column_stack([np.ones(len(raw_inner)), raw_inner]), y[~valid], 0.0, class_weight=False, iterations=800)
+            beta = fit_logistic(train, y[~valid], best_penalty, iterations=800)
+            raw_test = test @ beta
+            calibrated_test = sigmoid(np.column_stack([np.ones(len(raw_test)), raw_test]) @ calibration)
+            calibrated_inner = sigmoid(np.column_stack([np.ones(len(raw_inner)), raw_inner]) @ calibration)
             thresholds = np.linspace(0.1, 0.9, 81)
-            scores = [classification_metrics(y[~valid], train_prob, t)["balanced_accuracy"] or -1 for t in thresholds]
+            scores = [classification_metrics(y[~valid], calibrated_inner, t)["balanced_accuracy"] or -1 for t in thresholds]
             chosen = float(thresholds[int(np.argmax(scores))])
             chosen_thresholds.append(chosen)
-            pred[valid] = sigmoid(test @ beta)
+            chosen_penalties.append(best_penalty)
+            pred[valid] = calibrated_test
         fold_predictions = np.zeros(len(y), dtype=bool)
         for valid, threshold in zip(fold_masks, chosen_thresholds, strict=True):
             fold_predictions[valid] = pred[valid] >= threshold
         binary_score = fold_predictions.astype(float)
         confusion = classification_metrics(y, binary_score, 0.5)
         probability_metrics = {"pr_auc": average_precision(y, pred), "brier": float(np.mean((pred - y) ** 2))}
-        output["labels"][tag] = {"prevalence": float(np.mean(y)), "fold_thresholds": chosen_thresholds, **confusion, **probability_metrics}
+        output["labels"][tag] = {"prevalence": float(np.mean(y)), "fold_thresholds": chosen_thresholds, "fold_penalties": chosen_penalties, **confusion, **probability_metrics}
     return output
 
 
@@ -398,7 +429,7 @@ def main() -> int:
         alt_cdf = predict_cdf(altered_women, weeks, alt_beta, alt_scaler)
         alt_grouping = optimize_groups(altered_women, alt_cdf, weeks, int(cfg["min_group_size"]), float(cfg["risk_fail"]), float(cfg["risk_delay"])) if route == "B" else fixed_groups(altered_women, alt_cdf, weeks, float(cfg["risk_fail"]), float(cfg["risk_delay"]))
         measurement_sensitivity[f"y_threshold_{altered_threshold:.3f}"] = alt_grouping
-    q4 = q4_cv(female, int(cfg["folds"]), int(cfg["seed"]), 1.0 if route == "B" else 3.0)
+    q4 = q4_cv(female, int(cfg["folds"]), int(cfg["seed"]), route)
     censor_counts = {kind: sum(p["censor"] == kind for p in women) for kind in ["left", "interval", "right"]}
     metrics = {"route": route, "q1": q1_cv, "q2_q3_objective": grouping["objective"], "q4": {k: {m: v for m, v in d.items() if m in {"prevalence", "sensitivity", "specificity", "balanced_accuracy", "pr_auc", "brier"}} for k, d in q4["labels"].items()}}
     results = {"route": route, "data": {"male_rows": len(male), "male_women": len(women), "female_rows": len(female), "female_women": q4["n_women"], "censor_counts": censor_counts},
