@@ -48,3 +48,10 @@ P7 之前允许快速探索和废弃试验。Freeze 是可复现性清单，而�
 
 长期保留 `main` 和 `develop`。功能开发使用临时分支：`feature/core-workflow`、`feature/modeling-skills`、`feature/expert-library`、`feature/verification-tools`、`feature/artifact-contracts` 和 `feature/paper-pipeline`。另可按用途使用 `benchmark/*`、`experiment/*` 与 `release/*`；完成后合并并删除临时分支。
 
+### 赛题协作留痕协议
+
+1. P0 开始前创建 `experiment/<problem-id>` 分支，并在该分支记录问题契约、模型选择、实验和审计 artifact。
+2. 如果执行过程中暴露出通用工作流缺陷，记录缺陷现象与复现证据，转到独立 `feature/<improvement>` 分支完成最小修复和测试。
+3. 将已验证的修复合并或择取回赛题分支，确保 Git 历史能分别回答“本题做了什么”和“仓库机制改了什么”。
+4. `develop` 与 `main` 的合并由人工决定；不得让赛题自动推进顺带发布框架变更。
+
