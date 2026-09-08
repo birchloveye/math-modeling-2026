@@ -11,6 +11,7 @@ sys.path.insert(0, str(ROOT / "tools"))
 
 from data_profile import profile
 from final_audit import audit, freeze_from_manifest
+from schema_check import validate_instance
 from validate_results import CHECKS, validate
 
 
@@ -66,6 +67,20 @@ class ToolTests(unittest.TestCase):
                 for name in ("config.json", "metrics.json", "results.json", "runtime.json"):
                     (experiment / name).unlink(missing_ok=True)
                 experiment.rmdir()
+
+    def test_schema_check_accepts_valid_and_rejects_extra_fields(self) -> None:
+        schema = {
+            "type": "object",
+            "additionalProperties": False,
+            "required": ["id", "values"],
+            "properties": {
+                "id": {"type": "string", "pattern": "^Q[0-9]+$"},
+                "values": {"type": "array", "minItems": 1, "uniqueItems": True, "items": {"type": "integer", "minimum": 0}}
+            }
+        }
+        self.assertEqual(validate_instance({"id": "Q1", "values": [0, 2]}, schema), [])
+        errors = validate_instance({"id": "bad", "values": [1, 1], "extra": True}, schema)
+        self.assertEqual(len(errors), 3)
 
 
 if __name__ == "__main__":

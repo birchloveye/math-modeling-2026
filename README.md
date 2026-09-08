@@ -65,6 +65,7 @@ P0 人工通读 → P1 分析 → 人工确认问题契约
 
 ```bash
 python tools/data_profile.py workspace/data/input.csv
+python tools/schema_check.py schemas/problem.schema.json workspace/problem/problem_contract.json
 python tools/batch_experiment.py workspace/experiments/experiment_plan.json
 python tools/validate_results.py --evidence workspace/experiments/validation_evidence.json
 python tools/final_audit.py --freeze --manifest workspace/experiments/freeze_manifest.json
